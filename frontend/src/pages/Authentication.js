@@ -17,6 +17,7 @@ export async function action({ request }) {
   }
 
   const inputData = await request.formData();
+
   const authData = {
     email: inputData.get("email"),
     password: inputData.get("password"),
@@ -24,26 +25,23 @@ export async function action({ request }) {
 
   const response = await fetch("http://localhost:8080/" + mode, {
     method: "POST",
-    body: JSON.stringify({
-      email: authData.email,
-      password: authData.password,
-    }),
+    body: JSON.stringify(authData),
     headers: {
       "Content-Type": "application/json",
     },
   });
 
+  // these errors will be extracted and displayed on the login UI for better UX as these are issues with the user input
   if (response.status === 422 || response.status === 401) {
     return response;
   }
-
-  if(!response.ok){
+  // other errors will be thrown and extracted onto coresponding errorElement
+  if (!response.ok) {
     throw new Response("Could not authenticate user", { status: 500 });
   }
 
   //TODO
-  return redirect('/')
+  return redirect("/");
 }
 
 export default AuthenticationPage;
-
