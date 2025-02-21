@@ -1,4 +1,4 @@
-import { redirect } from "react-router-dom";
+import { Await, redirect } from "react-router-dom";
 import AuthForm from "../components/AuthForm";
 
 function AuthenticationPage() {
@@ -10,7 +10,7 @@ export async function action({ request }) {
   // searchParams is an instance of URLSearchParams, which is a built-in JavaScript object that provides methods for working with the query string of a URL
   const searchParams = new URL(request.url).searchParams;
   // when the AuthenticationPage is loaded for the first time, there will be no mode search query parameter in the URL, so we set the default value to 'login'
-  const mode = searchParams.get("mode") || "login";
+  const mode = searchParams.get("mode") || "signup";
 
   if (mode !== "login" && mode !== "signup") {
     throw new Response("Unsupported mode", { status: 422 });
@@ -35,12 +35,16 @@ export async function action({ request }) {
   if (response.status === 422 || response.status === 401) {
     return response;
   }
+
   // other errors will be thrown and extracted onto coresponding errorElement
   if (!response.ok) {
     throw new Response("Could not authenticate user", { status: 500 });
   }
 
-  //TODO
+  // Store JWT in local storage before redirecting
+  const resData = await response.json();
+  localStorage.setItem("token", resData.token);
+
   return redirect("/");
 }
 
